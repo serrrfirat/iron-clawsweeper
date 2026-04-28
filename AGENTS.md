@@ -1,6 +1,6 @@
 # AGENTS.MD
 
-ClawSweeper is the conservative maintenance bot for OpenClaw repositories.
+ClawSweeper is the conservative maintenance bot ported for `nearai/ironclaw`.
 Keep changes narrow, evidence-backed, and automation-safe.
 
 ## Structure
@@ -21,8 +21,8 @@ not split reports into issue/PR subtrees.
 - Review lane is proposal-only. It never closes GitHub items.
 - Apply lane mutates GitHub by syncing the durable Codex review comment and then
   closing only unchanged, high-confidence proposals.
-- Repository-specific rules live in `src/repository-profiles.ts`; ClawHub apply
-  may close only PRs that are certainly implemented on `main`.
+- Repository-specific rules live in `src/repository-profiles.ts`; the default
+  profile targets `nearai/ironclaw` with the standard evidence-backed policy.
 - Worker concurrency is shard-level: each shard processes its selected items
   sequentially. Maximum parallel Codex sessions equals `shard_count`, not
   `batch_size * shard_count`.
@@ -31,7 +31,7 @@ not split reports into issue/PR subtrees.
 
 ## Safety Rules
 
-- Do not run live apply/close commands unless Peter explicitly asks.
+- Do not run live apply/close commands unless Firat explicitly asks.
 - For apply-path repros, copy one report into a temp `items/` dir and pass
   `--skip-dashboard`, `--item-number`, and a temp `--closed-dir`.
 - Treat maintainer-authored and protected-label items as non-closeable.
@@ -61,11 +61,11 @@ Use `pnpm run check` before handoff for code/test/workflow changes.
 Useful live probes:
 
 ```bash
-gh run list --repo openclaw/clawsweeper --limit 20 --json databaseId,displayTitle,status,conclusion,createdAt,updatedAt
-gh api repos/openclaw/clawsweeper/readme --jq '.content' | base64 --decode
-gh api graphql -f query='query { repository(owner:"openclaw", name:"openclaw") { issues(states: OPEN) { totalCount } pullRequests(states: OPEN) { totalCount } } }'
+gh run list --repo serrrfirat/iron-clawsweeper --limit 20 --json databaseId,displayTitle,status,conclusion,createdAt,updatedAt
+gh api repos/serrrfirat/iron-clawsweeper/readme --jq '.content' | base64 --decode
+gh api graphql -f query='query { repository(owner:"nearai", name:"ironclaw") { issues(states: OPEN) { totalCount } pullRequests(states: OPEN) { totalCount } } }'
 ```
 
-For throughput/default tuning, inspect and update both `src/clawsweeper.ts` and
-`.github/workflows/sweep.yml`; continuation paths can otherwise keep stale
-defaults.
+For throughput/default tuning, inspect and update both `src/clawsweeper.ts`,
+`src/repository-profiles.ts`, and `.github/workflows/sweep.yml`; continuation
+paths can otherwise keep stale defaults.

@@ -1,7 +1,7 @@
 # Target Repository Dispatcher
 
-`openclaw/clawsweeper` cannot receive native `issues` or `pull_request` events
-from sibling repositories directly. Target repositories should forward those
+`serrrfirat/iron-clawsweeper` cannot receive native `issues` or
+`pull_request` events from `nearai/ironclaw` directly. Target repositories should forward those
 events with `repository_dispatch` so ClawSweeper can run a single-job exact
 one-item review, sync the durable review comment, and immediately apply a safe
 close proposal for that same item.
@@ -31,7 +31,7 @@ jobs:
     if: ${{ !(endsWith(github.actor, '[bot]') && (github.event.action == 'labeled' || github.event.action == 'unlabeled')) }}
     env:
       HAS_CLAWSWEEPER_APP_PRIVATE_KEY: ${{ secrets.CLAWSWEEPER_APP_PRIVATE_KEY != '' }}
-      CLAWSWEEPER_APP_CLIENT_ID: Iv23liOECG0slfuhz093
+      CLAWSWEEPER_APP_CLIENT_ID: ${{ vars.CLAWSWEEPER_APP_CLIENT_ID }}
       SUPERSEDES_IN_PROGRESS: ${{ (github.event.action == 'edited' || github.event.action == 'synchronize' || github.event.action == 'ready_for_review') && 'true' || 'false' }}
     steps:
       - name: Debounce bursty metadata events
@@ -40,17 +40,17 @@ jobs:
 
       - name: Create ClawSweeper dispatch token
         id: token
-        if: ${{ env.HAS_CLAWSWEEPER_APP_PRIVATE_KEY == 'true' }}
+        if: ${{ env.CLAWSWEEPER_APP_CLIENT_ID != '' && env.HAS_CLAWSWEEPER_APP_PRIVATE_KEY == 'true' }}
         uses: actions/create-github-app-token@1b10c78c7865c340bc4f6099eb2f838309f1e8c3 # v3.1.1
         with:
           client-id: ${{ env.CLAWSWEEPER_APP_CLIENT_ID }}
           private-key: ${{ secrets.CLAWSWEEPER_APP_PRIVATE_KEY }}
-          owner: openclaw
-          repositories: clawsweeper
+          owner: serrrfirat
+          repositories: iron-clawsweeper
 
       - name: Dispatch exact ClawSweeper review
         env:
-          GH_TOKEN: ${{ steps.token.outputs.token || secrets.OPENCLAW_GH_TOKEN }}
+          GH_TOKEN: ${{ steps.token.outputs.token || secrets.CLAWSWEEPER_DISPATCH_TOKEN }}
           TARGET_REPO: ${{ github.repository }}
           ITEM_NUMBER: ${{ github.event.issue.number || github.event.pull_request.number }}
           ITEM_KIND: ${{ github.event_name == 'pull_request_target' && 'pull_request' || 'issue' }}
@@ -69,7 +69,7 @@ jobs:
             --arg source_action "$SOURCE_ACTION" \
             --argjson supersedes_in_progress "$SUPERSEDES_IN_PROGRESS" \
             '{event_type:"clawsweeper_item",client_payload:{target_repo:$target_repo,item_number:$item_number,item_kind:$item_kind,source_event:$source_event,source_action:$source_action,supersedes_in_progress:$supersedes_in_progress}}')"
-          gh api repos/openclaw/clawsweeper/dispatches \
+          gh api repos/serrrfirat/iron-clawsweeper/dispatches \
             --method POST \
             --input - <<< "$payload"
 ```
