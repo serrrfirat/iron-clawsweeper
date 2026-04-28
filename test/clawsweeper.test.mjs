@@ -38,14 +38,15 @@ import {
   shouldPlanItem,
   validateCloseDecision,
 } from "../dist/clawsweeper.js";
+import { DEFAULT_TARGET_REPO, repositoryProfileFor } from "../dist/repository-profiles.js";
 
 function item(overrides = {}) {
   return {
-    repo: "openclaw/openclaw",
+    repo: "nearai/ironclaw",
     number: 123,
     kind: "issue",
     title: "Sample item",
-    url: "https://github.com/openclaw/openclaw/issues/123",
+    url: "https://github.com/nearai/ironclaw/issues/123",
     createdAt: "2026-01-01T00:00:00Z",
     updatedAt: "2026-01-01T00:00:00Z",
     author: "contributor",
@@ -87,7 +88,7 @@ const git = {
 
 function reportFrontMatter(overrides = {}) {
   const values = {
-    repository: "openclaw/openclaw",
+    repository: "nearai/ironclaw",
     type: "issue",
     decision: "keep_open",
     close_reason: "none",
@@ -105,7 +106,7 @@ ${Object.entries(values)
 
 function auditRecord(number, overrides = {}) {
   return {
-    repo: "openclaw/openclaw",
+    repo: "nearai/ironclaw",
     number,
     location: "items",
     path: `items/${number}.md`,
@@ -120,6 +121,50 @@ function auditRecord(number, overrides = {}) {
     ...overrides,
   };
 }
+
+test("IronClaw profile is the default target repository", () => {
+  assert.equal(DEFAULT_TARGET_REPO, "nearai/ironclaw");
+  assert.deepEqual(
+    {
+      targetRepo: repositoryProfileFor("nearai/ironclaw").targetRepo,
+      slug: repositoryProfileFor("nearai/ironclaw").slug,
+      displayName: repositoryProfileFor("nearai/ironclaw").displayName,
+      checkoutDir: repositoryProfileFor("nearai/ironclaw").checkoutDir,
+    },
+    {
+      targetRepo: "nearai/ironclaw",
+      slug: "nearai-ironclaw",
+      displayName: "IronClaw",
+      checkoutDir: "ironclaw",
+    },
+  );
+});
+
+test("IronClaw policy allows normal evidence-backed issue close proposals", () => {
+  const implementedIssue = validateCloseDecision(
+    item({
+      repo: "nearai/ironclaw",
+      url: "https://github.com/nearai/ironclaw/issues/123",
+    }),
+    closeDecision(),
+  );
+
+  assert.equal(implementedIssue.ok, true);
+});
+
+test("IronClaw policy rejects OpenClaw-specific ClawHub close proposals", () => {
+  const validation = validateCloseDecision(
+    item({
+      repo: "nearai/ironclaw",
+      url: "https://github.com/nearai/ironclaw/issues/123",
+    }),
+    closeDecision({ closeReason: "clawhub" }),
+  );
+
+  assert.equal(validation.ok, false);
+  assert.equal(validation.actionTaken, "skipped_invalid_decision");
+  assert.match(validation.reason, /clawhub is not allowed for nearai\/ironclaw issue apply policy/);
+});
 
 test("protected labels are normalized and excluded from normal planning", () => {
   assert.deepEqual(protectedLabels(["Security", "bug", "maintainer", "SECURITY"]), [
@@ -455,7 +500,7 @@ test("not-actionable-in-repo closes are allowed with evidence and comment", () =
       evidence: [
         {
           label: "external administration",
-          detail: "The request is for GitHub project settings, not OpenClaw source code.",
+          detail: "The request is for GitHub project settings, not IronClaw source code.",
           file: null,
           line: null,
           command: "provided GitHub issue context",
@@ -463,13 +508,13 @@ test("not-actionable-in-repo closes are allowed with evidence and comment", () =
         },
       ],
       closeComment:
-        "Closing this as not actionable in this repository after Codex review.\n\n- External administration: GitHub project settings are outside OpenClaw source code.",
+        "Closing this as not actionable in this repository after Codex review.\n\n- External administration: GitHub project settings are outside IronClaw source code.",
     }),
     git,
   });
   assert.equal(action.actionTaken, "proposed_close");
   assert.match(action.closeComment, /Thanks for writing this up/);
-  assert.match(action.closeComment, /outside the OpenClaw source shell/);
+  assert.match(action.closeComment, /outside the IronClaw source shell/);
 });
 
 test("public comments avoid self-referencing the current item number", () => {
@@ -640,6 +685,8 @@ test("codex subprocess env strips GitHub and App credentials", () => {
     process.env.GH_TOKEN = "gh";
     process.env.GITHUB_TOKEN = "github";
     process.env.OPENCLAW_GH_TOKEN = "openclaw";
+    process.env.CLAWSWEEPER_GH_TOKEN = "clawsweeper";
+    process.env.CLAWSWEEPER_DISPATCH_TOKEN = "dispatch";
     process.env.CLAWSWEEPER_APP_ID = "123";
     process.env.CLAWSWEEPER_APP_PRIVATE_KEY = "private";
     process.env.OPENAI_API_KEY = "openai";
@@ -650,6 +697,8 @@ test("codex subprocess env strips GitHub and App credentials", () => {
     assert.equal(env.GH_TOKEN, undefined);
     assert.equal(env.GITHUB_TOKEN, undefined);
     assert.equal(env.OPENCLAW_GH_TOKEN, undefined);
+    assert.equal(env.CLAWSWEEPER_GH_TOKEN, undefined);
+    assert.equal(env.CLAWSWEEPER_DISPATCH_TOKEN, undefined);
     assert.equal(env.CLAWSWEEPER_APP_ID, undefined);
     assert.equal(env.CLAWSWEEPER_APP_PRIVATE_KEY, undefined);
     assert.equal(env.OPENAI_API_KEY, undefined);
@@ -793,21 +842,21 @@ test("audit health section summarizes strict status and actionable findings", ()
   const section = auditHealthSection(result);
 
   assert.match(section, /### Audit Health/);
-  assert.match(section, /<!-- clawsweeper-audit:openclaw-openclaw:start -->/);
+  assert.match(section, /<!-- clawsweeper-audit:nearai-ironclaw:start -->/);
   assert.match(
     section,
-    /Repository: \[openclaw\/openclaw\]\(https:\/\/github\.com\/openclaw\/openclaw\)/,
+    /Repository: \[nearai\/ironclaw\]\(https:\/\/github\.com\/nearai\/ironclaw\)/,
   );
   assert.match(section, /Status: \*\*Action needed\*\*/);
   assert.match(section, /Targeted review input: `10,11,14`/);
   assert.match(section, /\| Missing eligible open records \| 1 \|/);
-  assert.match(section, /\[#10\]\(https:\/\/github\.com\/openclaw\/openclaw\/issues\/10\)/);
+  assert.match(section, /\[#10\]\(https:\/\/github\.com\/nearai\/ironclaw\/issues\/10\)/);
   assert.match(section, /Missing eligible open/);
-  assert.match(section, /\[#13\]\(https:\/\/github\.com\/openclaw\/openclaw\/issues\/13\)/);
+  assert.match(section, /\[#13\]\(https:\/\/github\.com\/nearai\/ironclaw\/issues\/13\)/);
   assert.match(section, /Protected proposed close/);
-  assert.match(section, /\[#11\]\(https:\/\/github\.com\/openclaw\/openclaw\/issues\/11\)/);
+  assert.match(section, /\[#11\]\(https:\/\/github\.com\/nearai\/ironclaw\/issues\/11\)/);
   assert.match(section, /Open archived/);
-  assert.doesNotMatch(section, /\[#12\]\(https:\/\/github\.com\/openclaw\/openclaw\/issues\/12\)/);
+  assert.doesNotMatch(section, /\[#12\]\(https:\/\/github\.com\/nearai\/ironclaw\/issues\/12\)/);
 });
 
 test("audit defers stale item drift until the open scan is complete", () => {
@@ -841,7 +890,7 @@ test("recently closed dashboard rows link items and archived reports", () => {
   assert.match(rows, /\[#42\]\(https:\/\/github\.com\/openclaw\/clawhub\/pull\/42\)/);
   assert.match(
     rows,
-    /\[closed\/42\.md\]\(https:\/\/github\.com\/openclaw\/clawsweeper\/blob\/main\/closed\/42\.md\)/,
+    /\[closed\/42\.md\]\(https:\/\/github\.com\/serrrfirat\/iron-clawsweeper\/blob\/main\/closed\/42\.md\)/,
   );
   assert.match(rows, /Fix pipe \\| title/);
   assert.match(rows, /already implemented on main/);
@@ -857,14 +906,14 @@ test("recently closed dashboard rows include reconciled external closes", () => 
   });
   const rows = formatRecentClosedRows([
     {
-      repo: "openclaw/openclaw",
+      repo: "nearai/ironclaw",
       number: 73370,
       kind: "issue",
       title: "Externally closed item",
       closeReason: "closed externally after review",
       closedAt: dashboardClosedAt(markdown),
       appliedAt: undefined,
-      reportPath: "records/openclaw-openclaw/closed/73370.md",
+      reportPath: "records/nearai-ironclaw/closed/73370.md",
     },
   ]);
 

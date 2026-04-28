@@ -1,6 +1,6 @@
 name: ClawSweeper
 
-run-name: ${{ github.event_name == 'repository_dispatch' && format('Review event item {0}#{1}', github.event.client_payload.target_repo || 'openclaw/openclaw', github.event.client_payload.item_number || '?') || (github.event_name == 'workflow_dispatch' && github.event.inputs.apply_existing == 'true' && github.event.inputs.apply_sync_comments_only == 'true') && 'Sync Codex review comments' || ((github.event_name == 'workflow_dispatch' && github.event.inputs.apply_existing == 'true') || (github.event_name == 'schedule' && (github.event.schedule == '3 * * * *' || github.event.schedule == '18 * * * *' || github.event.schedule == '33 * * * *' || github.event.schedule == '48 * * * *' || github.event.schedule == '8,23,38,53 * * * *'))) && 'Apply ClawSweeper closures' || ((github.event_name == 'workflow_dispatch' && github.event.inputs.audit_dashboard == 'true') || (github.event_name == 'schedule' && (github.event.schedule == '7 */6 * * *' || github.event.schedule == '12 */6 * * *'))) && 'Audit ClawSweeper dashboard' || ((github.event_name == 'workflow_dispatch' && github.event.inputs.hot_intake == 'true') || (github.event_name == 'schedule' && (github.event.schedule == '*/5 * * * *' || github.event.schedule == '2/5 * * * *'))) && 'Review hot ClawSweeper items' || 'Review ClawSweeper items' }}
+run-name: ${{ github.event_name == 'repository_dispatch' && format('Review event item {0}#{1}', github.event.client_payload.target_repo || 'nearai/ironclaw', github.event.client_payload.item_number || '?') || (github.event_name == 'workflow_dispatch' && github.event.inputs.apply_existing == 'true' && github.event.inputs.apply_sync_comments_only == 'true') && 'Sync Codex review comments' || ((github.event_name == 'workflow_dispatch' && github.event.inputs.apply_existing == 'true') || (github.event_name == 'schedule' && (github.event.schedule == '3 * * * *' || github.event.schedule == '18 * * * *' || github.event.schedule == '33 * * * *' || github.event.schedule == '48 * * * *' || github.event.schedule == '8,23,38,53 * * * *'))) && 'Apply ClawSweeper closures' || ((github.event_name == 'workflow_dispatch' && github.event.inputs.audit_dashboard == 'true') || (github.event_name == 'schedule' && (github.event.schedule == '7 */6 * * *' || github.event.schedule == '12 */6 * * *'))) && 'Audit ClawSweeper dashboard' || ((github.event_name == 'workflow_dispatch' && github.event.inputs.hot_intake == 'true') || (github.event_name == 'schedule' && (github.event.schedule == '*/5 * * * *' || github.event.schedule == '2/5 * * * *'))) && 'Review hot ClawSweeper items' || 'Review ClawSweeper items' }}
 
 on:
   repository_dispatch:
@@ -10,7 +10,7 @@ on:
       target_repo:
         description: "Repository to sweep"
         required: false
-        default: "openclaw/openclaw"
+        default: "nearai/ironclaw"
       apply_closures:
         description: "Deprecated; review shards are proposal-only. Use apply_existing to close unchanged proposed decisions."
         required: false
@@ -127,10 +127,11 @@ permissions:
   pull-requests: write
 
 env:
-  CLAWSWEEPER_APP_CLIENT_ID: Iv23liOECG0slfuhz093
+  CLAWSWEEPER_APP_CLIENT_ID: ${{ vars.CLAWSWEEPER_APP_CLIENT_ID }}
+  HAS_CLAWSWEEPER_APP_PRIVATE_KEY: ${{ secrets.CLAWSWEEPER_APP_PRIVATE_KEY != '' }}
 
 concurrency:
-  group: ${{ github.event_name == 'repository_dispatch' && format('clawsweeper-event-{0}-{1}', github.event.client_payload.target_repo || 'openclaw/openclaw', github.event.client_payload.item_number || github.run_id) || format('{0}-{1}', (github.event_name == 'workflow_dispatch' && github.event.inputs.apply_existing == 'true' && github.event.inputs.apply_sync_comments_only == 'true') && 'clawsweeper-comment-sync' || ((github.event_name == 'workflow_dispatch' && github.event.inputs.apply_existing == 'true') || (github.event_name == 'schedule' && (github.event.schedule == '3 * * * *' || github.event.schedule == '18 * * * *' || github.event.schedule == '33 * * * *' || github.event.schedule == '48 * * * *' || github.event.schedule == '8,23,38,53 * * * *'))) && 'clawsweeper-apply' || ((github.event_name == 'workflow_dispatch' && github.event.inputs.hot_intake == 'true') || (github.event_name == 'schedule' && (github.event.schedule == '*/5 * * * *' || github.event.schedule == '2/5 * * * *'))) && 'clawsweeper-intake' || ((github.event_name == 'workflow_dispatch' && github.event.inputs.audit_dashboard == 'true') || (github.event_name == 'schedule' && (github.event.schedule == '7 */6 * * *' || github.event.schedule == '12 */6 * * *'))) && 'clawsweeper-audit' || 'clawsweeper-review', github.event.inputs.target_repo || github.event.client_payload.target_repo || ((github.event.schedule == '2/5 * * * *' || github.event.schedule == '22 * * * *' || github.event.schedule == '8,23,38,53 * * * *' || github.event.schedule == '12 */6 * * *') && 'openclaw/clawhub' || 'openclaw/openclaw')) }}
+  group: ${{ github.event_name == 'repository_dispatch' && format('clawsweeper-event-{0}-{1}', github.event.client_payload.target_repo || 'nearai/ironclaw', github.event.client_payload.item_number || github.run_id) || format('{0}-{1}', (github.event_name == 'workflow_dispatch' && github.event.inputs.apply_existing == 'true' && github.event.inputs.apply_sync_comments_only == 'true') && 'clawsweeper-comment-sync' || ((github.event_name == 'workflow_dispatch' && github.event.inputs.apply_existing == 'true') || (github.event_name == 'schedule' && (github.event.schedule == '3 * * * *' || github.event.schedule == '18 * * * *' || github.event.schedule == '33 * * * *' || github.event.schedule == '48 * * * *' || github.event.schedule == '8,23,38,53 * * * *'))) && 'clawsweeper-apply' || ((github.event_name == 'workflow_dispatch' && github.event.inputs.hot_intake == 'true') || (github.event_name == 'schedule' && (github.event.schedule == '*/5 * * * *' || github.event.schedule == '2/5 * * * *'))) && 'clawsweeper-intake' || ((github.event_name == 'workflow_dispatch' && github.event.inputs.audit_dashboard == 'true') || (github.event_name == 'schedule' && (github.event.schedule == '7 */6 * * *' || github.event.schedule == '12 */6 * * *'))) && 'clawsweeper-audit' || 'clawsweeper-review', github.event.inputs.target_repo || github.event.client_payload.target_repo || 'nearai/ironclaw') }}
   cancel-in-progress: ${{ github.event_name == 'repository_dispatch' && (github.event.client_payload.supersedes_in_progress == true || github.event.client_payload.supersedes_in_progress == 'true') }}
 
 jobs:
@@ -153,7 +154,7 @@ jobs:
         id: target
         run: |
           set -euo pipefail
-          target_repo="${{ github.event.client_payload.target_repo || 'openclaw/openclaw' }}"
+          target_repo="${{ github.event.client_payload.target_repo || 'nearai/ironclaw' }}"
           item_number="${{ github.event.client_payload.item_number || '' }}"
           item_kind="${{ github.event.client_payload.item_kind || '' }}"
           if ! printf '%s' "$target_repo" | grep -Eq '^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$'; then
@@ -183,6 +184,7 @@ jobs:
 
       - name: Create target read token
         id: target-read-token
+        if: ${{ env.CLAWSWEEPER_APP_CLIENT_ID != '' && env.HAS_CLAWSWEEPER_APP_PRIVATE_KEY == 'true' }}
         uses: actions/create-github-app-token@1b10c78c7865c340bc4f6099eb2f838309f1e8c3 # v3.1.1
         with:
           client-id: ${{ env.CLAWSWEEPER_APP_CLIENT_ID }}
@@ -240,7 +242,7 @@ jobs:
 
       - name: Review exact event item
         env:
-          GH_TOKEN: ${{ steps.target-read-token.outputs.token }}
+          GH_TOKEN: ${{ steps.target-read-token.outputs.token || secrets.CLAWSWEEPER_GH_TOKEN || secrets.OPENCLAW_GH_TOKEN || github.token }}
         run: |
           set -euo pipefail
           test -n "$GH_TOKEN"
@@ -262,6 +264,7 @@ jobs:
 
       - name: Create target write token
         id: target-write-token
+        if: ${{ env.CLAWSWEEPER_APP_CLIENT_ID != '' && env.HAS_CLAWSWEEPER_APP_PRIVATE_KEY == 'true' }}
         uses: actions/create-github-app-token@1b10c78c7865c340bc4f6099eb2f838309f1e8c3 # v3.1.1
         with:
           client-id: ${{ env.CLAWSWEEPER_APP_CLIENT_ID }}
@@ -273,7 +276,7 @@ jobs:
 
       - name: Publish event result and apply safe close
         env:
-          GH_TOKEN: ${{ steps.target-write-token.outputs.token }}
+          GH_TOKEN: ${{ steps.target-write-token.outputs.token || secrets.CLAWSWEEPER_GH_TOKEN || secrets.OPENCLAW_GH_TOKEN }}
           REPO_TOKEN: ${{ github.token }}
           TARGET_REPO: ${{ steps.target.outputs.target_repo }}
           ITEM_NUMBER: ${{ steps.target.outputs.item_number }}
@@ -415,14 +418,7 @@ jobs:
         run: |
           target_repo="${{ github.event.inputs.target_repo || github.event.client_payload.target_repo || '' }}"
           if [ -z "$target_repo" ]; then
-            case "${{ github.event.schedule || '' }}" in
-              "2/5 * * * *"|"22 * * * *"|"8,23,38,53 * * * *"|"12 */6 * * *")
-                target_repo="openclaw/clawhub"
-                ;;
-              *)
-                target_repo="openclaw/openclaw"
-                ;;
-            esac
+            target_repo="nearai/ironclaw"
           fi
           target_owner="${target_repo%%/*}"
           target_name="${target_repo#*/}"
@@ -435,6 +431,7 @@ jobs:
 
       - name: Create target read token
         id: target-read-token
+        if: ${{ env.CLAWSWEEPER_APP_CLIENT_ID != '' && env.HAS_CLAWSWEEPER_APP_PRIVATE_KEY == 'true' }}
         uses: actions/create-github-app-token@1b10c78c7865c340bc4f6099eb2f838309f1e8c3 # v3.1.1
         with:
           client-id: ${{ env.CLAWSWEEPER_APP_CLIENT_ID }}
@@ -518,7 +515,7 @@ jobs:
           ITEM_NUMBERS: ${{ github.event.inputs.item_numbers || github.event.client_payload.item_number || '' }}
           MAX_PAGES: ${{ steps.mode.outputs.max_pages }}
           TARGET_REPO: ${{ steps.target.outputs.target_repo }}
-          GH_TOKEN: ${{ steps.target-read-token.outputs.token || secrets.OPENCLAW_GH_TOKEN || github.token }}
+          GH_TOKEN: ${{ steps.target-read-token.outputs.token || secrets.CLAWSWEEPER_GH_TOKEN || secrets.OPENCLAW_GH_TOKEN || github.token }}
         run: |
           set -euo pipefail
           item_arg=()
@@ -558,7 +555,7 @@ jobs:
         continue-on-error: true
         working-directory: clawsweeper
         env:
-          GH_TOKEN: ${{ secrets.OPENCLAW_GH_TOKEN || github.token }}
+          GH_TOKEN: ${{ secrets.CLAWSWEEPER_GH_TOKEN || secrets.OPENCLAW_GH_TOKEN || github.token }}
           TARGET_REPO: ${{ steps.target.outputs.target_repo }}
         run: |
           git config user.name "github-actions[bot]"
@@ -606,6 +603,7 @@ jobs:
 
       - name: Create target read token
         id: target-read-token
+        if: ${{ env.CLAWSWEEPER_APP_CLIENT_ID != '' && env.HAS_CLAWSWEEPER_APP_PRIVATE_KEY == 'true' }}
         uses: actions/create-github-app-token@1b10c78c7865c340bc4f6099eb2f838309f1e8c3 # v3.1.1
         with:
           client-id: ${{ env.CLAWSWEEPER_APP_CLIENT_ID }}
@@ -666,7 +664,7 @@ jobs:
         working-directory: clawsweeper
         env:
           CLAWSWEEPER_APPLY_CLOSURES: ${{ needs.plan.outputs.apply_closures }}
-          GH_TOKEN: ${{ steps.target-read-token.outputs.token || secrets.OPENCLAW_GH_TOKEN || github.token }}
+          GH_TOKEN: ${{ steps.target-read-token.outputs.token || secrets.CLAWSWEEPER_GH_TOKEN || secrets.OPENCLAW_GH_TOKEN || github.token }}
         run: |
           hot_intake_arg=()
           if [ "${{ needs.plan.outputs.hot_intake }}" = "true" ]; then
@@ -710,6 +708,7 @@ jobs:
 
       - name: Create target write token
         id: target-write-token
+        if: ${{ env.CLAWSWEEPER_APP_CLIENT_ID != '' && env.HAS_CLAWSWEEPER_APP_PRIVATE_KEY == 'true' }}
         uses: actions/create-github-app-token@1b10c78c7865c340bc4f6099eb2f838309f1e8c3 # v3.1.1
         with:
           client-id: ${{ env.CLAWSWEEPER_APP_CLIENT_ID }}
@@ -742,7 +741,7 @@ jobs:
 
       - name: Apply review artifacts
         env:
-          GH_TOKEN: ${{ secrets.OPENCLAW_GH_TOKEN || github.token }}
+          GH_TOKEN: ${{ secrets.CLAWSWEEPER_GH_TOKEN || secrets.OPENCLAW_GH_TOKEN || github.token }}
           TARGET_REPO: ${{ needs.plan.outputs.target_repo }}
         run: |
           pnpm run apply-artifacts -- --target-repo "$TARGET_REPO" --artifact-dir artifacts
@@ -753,7 +752,7 @@ jobs:
 
       - name: Commit dashboard and review files
         env:
-          GH_TOKEN: ${{ secrets.OPENCLAW_GH_TOKEN || github.token }}
+          GH_TOKEN: ${{ secrets.CLAWSWEEPER_GH_TOKEN || secrets.OPENCLAW_GH_TOKEN || github.token }}
           TARGET_REPO: ${{ needs.plan.outputs.target_repo }}
         run: |
           pnpm run reconcile -- --target-repo "$TARGET_REPO"
@@ -779,7 +778,7 @@ jobs:
         if: ${{ success() }}
         timeout-minutes: 15
         env:
-          GH_TOKEN: ${{ steps.target-write-token.outputs.token }}
+          GH_TOKEN: ${{ steps.target-write-token.outputs.token || secrets.CLAWSWEEPER_GH_TOKEN || secrets.OPENCLAW_GH_TOKEN }}
           TARGET_REPO: ${{ needs.plan.outputs.target_repo }}
         run: |
           set -euo pipefail
@@ -837,7 +836,7 @@ jobs:
         if: ${{ success() && github.event.inputs.apply_after_review == 'true' }}
         timeout-minutes: 30
         env:
-          GH_TOKEN: ${{ steps.target-write-token.outputs.token }}
+          GH_TOKEN: ${{ steps.target-write-token.outputs.token || secrets.CLAWSWEEPER_GH_TOKEN || secrets.OPENCLAW_GH_TOKEN }}
           TARGET_REPO: ${{ needs.plan.outputs.target_repo }}
         run: |
           set -euo pipefail
@@ -927,14 +926,7 @@ jobs:
         run: |
           target_repo="${{ github.event.inputs.target_repo || github.event.client_payload.target_repo || '' }}"
           if [ -z "$target_repo" ]; then
-            case "${{ github.event.schedule || '' }}" in
-              "12 */6 * * *")
-                target_repo="openclaw/clawhub"
-                ;;
-              *)
-                target_repo="openclaw/openclaw"
-                ;;
-            esac
+            target_repo="nearai/ironclaw"
           fi
           target_owner="${target_repo%%/*}"
           target_name="${target_repo#*/}"
@@ -946,6 +938,7 @@ jobs:
 
       - name: Create target read token
         id: target-read-token
+        if: ${{ env.CLAWSWEEPER_APP_CLIENT_ID != '' && env.HAS_CLAWSWEEPER_APP_PRIVATE_KEY == 'true' }}
         uses: actions/create-github-app-token@1b10c78c7865c340bc4f6099eb2f838309f1e8c3 # v3.1.1
         with:
           client-id: ${{ env.CLAWSWEEPER_APP_CLIENT_ID }}
@@ -967,7 +960,7 @@ jobs:
 
       - name: Refresh Audit Health
         env:
-          GH_TOKEN: ${{ steps.target-read-token.outputs.token || secrets.OPENCLAW_GH_TOKEN || github.token }}
+          GH_TOKEN: ${{ steps.target-read-token.outputs.token || secrets.CLAWSWEEPER_GH_TOKEN || secrets.OPENCLAW_GH_TOKEN || github.token }}
           TARGET_REPO: ${{ steps.target.outputs.target_repo }}
         run: |
           set -euo pipefail
@@ -1012,14 +1005,7 @@ jobs:
         run: |
           target_repo="${{ github.event.inputs.target_repo || '' }}"
           if [ -z "$target_repo" ]; then
-            case "${{ github.event.schedule || '' }}" in
-              "8,23,38,53 * * * *")
-                target_repo="openclaw/clawhub"
-                ;;
-              *)
-                target_repo="openclaw/openclaw"
-                ;;
-            esac
+            target_repo="nearai/ironclaw"
           fi
           target_owner="${target_repo%%/*}"
           target_name="${target_repo#*/}"
@@ -1031,6 +1017,7 @@ jobs:
 
       - name: Create target write token
         id: target-write-token
+        if: ${{ env.CLAWSWEEPER_APP_CLIENT_ID != '' && env.HAS_CLAWSWEEPER_APP_PRIVATE_KEY == 'true' }}
         uses: actions/create-github-app-token@1b10c78c7865c340bc4f6099eb2f838309f1e8c3 # v3.1.1
         with:
           client-id: ${{ env.CLAWSWEEPER_APP_CLIENT_ID }}
@@ -1057,7 +1044,7 @@ jobs:
 
       - name: Apply unchanged proposed decisions with checkpoints
         env:
-          GH_TOKEN: ${{ steps.target-write-token.outputs.token }}
+          GH_TOKEN: ${{ steps.target-write-token.outputs.token || secrets.CLAWSWEEPER_GH_TOKEN || secrets.OPENCLAW_GH_TOKEN }}
           TARGET_REPO: ${{ steps.target.outputs.target_repo }}
           CLAWSWEEPER_PUBLISH_THROTTLE_STATUS: "true"
           CLAWSWEEPER_RUN_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
@@ -1177,7 +1164,7 @@ jobs:
           ]);
 
           const applyKind = process.env.APPLY_KIND || "all";
-          const targetRepo = process.env.TARGET_REPO || "openclaw/openclaw";
+          const targetRepo = process.env.TARGET_REPO || "nearai/ironclaw";
           const applyCloseReasonsRaw = process.env.APPLY_CLOSE_REASONS || "all";
           const applyCloseReasons =
             applyCloseReasonsRaw === "all"
@@ -1195,7 +1182,7 @@ jobs:
           const itemsDir = path.join("records", targetSlug, "items");
           const frontMatterValue = (markdown, key) =>
             markdown.match(new RegExp(`^${key}:\\s*(.+)$`, "m"))?.[1]?.trim().replace(/^"|"$/g, "");
-          const repoFor = (markdown, name) => frontMatterValue(markdown, "repository") || (/^\d+\.md$/.test(name) ? "openclaw/openclaw" : "");
+          const repoFor = (markdown, name) => frontMatterValue(markdown, "repository") || (/^\d+\.md$/.test(name) ? "nearai/ironclaw" : "");
           const numberFor = (name) => Number(name.match(/(\d+)\.md$/)?.[1] || 0);
           const allowedForTarget = (type, reason) => {
             if (targetRepo === "openclaw/clawhub") return type === "pull_request" && reason === "implemented_on_main";

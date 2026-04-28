@@ -20,31 +20,29 @@ export interface RepositoryProfile {
   applyCloseRules: Partial<Record<RepositoryItemKind, readonly RepositoryCloseReason[]>>;
 }
 
-const OPENCLAW_CLOSE_REASONS: readonly RepositoryCloseReason[] = [
+const STANDARD_CLOSE_REASONS: readonly RepositoryCloseReason[] = [
   "implemented_on_main",
   "cannot_reproduce",
-  "clawhub",
   "duplicate_or_superseded",
   "not_actionable_in_repo",
   "incoherent",
   "stale_insufficient_info",
 ];
 
-export const DEFAULT_TARGET_REPO = "openclaw/openclaw";
+export const DEFAULT_TARGET_REPO = "nearai/ironclaw";
 
 export const REPOSITORY_PROFILES: readonly RepositoryProfile[] = [
   {
     targetRepo: DEFAULT_TARGET_REPO,
-    slug: "openclaw-openclaw",
-    displayName: "OpenClaw",
-    checkoutDir: "openclaw",
-    docsUrl: "https://docs.openclaw.ai",
-    communityUrl: "https://clawhub.ai/",
+    slug: "nearai-ironclaw",
+    displayName: "IronClaw",
+    checkoutDir: "ironclaw",
+    docsUrl: "https://github.com/nearai/ironclaw",
     promptNote:
-      "Use the OpenClaw source tree, docs, changelog, and current main branch. Close proposals may use the normal OpenClaw stale/duplicate/not-in-repo/implemented-on-main policy when evidence is strong.",
+      "Use the IronClaw source tree, repository docs, changelog, and current main branch. Close proposals may use the normal IronClaw stale/duplicate/not-in-repo/implemented-on-main policy when evidence is strong.",
     applyCloseRules: {
-      issue: OPENCLAW_CLOSE_REASONS,
-      pull_request: OPENCLAW_CLOSE_REASONS.filter((reason) => reason !== "stale_insufficient_info"),
+      issue: STANDARD_CLOSE_REASONS,
+      pull_request: STANDARD_CLOSE_REASONS.filter((reason) => reason !== "stale_insufficient_info"),
     },
   },
   {

@@ -4,4 +4,5 @@ dist/
 .env
 .artifacts/
 artifacts/
+.pi/sessions/
 tmp/

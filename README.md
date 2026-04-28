@@ -1,11 +1,25 @@
-# ClawSweeper
+# Iron ClawSweeper
 
-ClawSweeper is the conservative maintenance bot for OpenClaw repositories. It
-currently sweeps `openclaw/openclaw` and `openclaw/clawhub`.
+Iron ClawSweeper is a conservative maintenance bot configuration for
+[`nearai/ironclaw`](https://github.com/nearai/ironclaw). It is ported from the
+OpenClaw ClawSweeper workflow, but this branch targets IronClaw by default while
+keeping the existing Codex-based review runtime.
 
-It keeps one markdown report per open issue or PR, publishes one durable Codex
-automated review comment when useful, and only closes items when the evidence is
-strong.
+The bot keeps one markdown report per reviewed issue or pull request, can publish
+one durable automated review comment when explicitly applying decisions, and only
+closes items when the evidence is strong and the repository policy allows it.
+
+## Current Scope
+
+- Default target repository: `nearai/ironclaw`
+- Default report slug: `nearai-ironclaw`
+- Default target checkout directory: `ironclaw`
+- Review runtime: Codex CLI (`codex exec`)
+- Local agent support: project-local Pi settings in `.pi/settings.json`
+
+The old OpenClaw/ClawHub generated dashboard was removed from this README to
+avoid stale status. A fresh dashboard will be generated after the first IronClaw
+sweep writes records under `records/nearai-ironclaw/`.
 
 ## Guardrails
 
@@ -13,555 +27,280 @@ ClawSweeper may propose a close only when the item is clearly one of these:
 
 - implemented on current `main`
 - not reproducible on current `main`
-- better suited for ClawHub skill/plugin work than core
 - duplicate or superseded by a canonical issue/PR
 - concrete but not actionable in this source repo
 - incoherent enough that no action can be taken
-- stale issue older than 60 days with too little data to verify
-
-Maintainer-authored items are never auto-closed. Everything else stays open.
-Issues with an open PR that references them using GitHub closing syntax such as
-`Fixes #123` stay open until that PR merges or is closed.
-Open issue/PR pairs from the same author stay open together unless the paired
-item is already resolved or a maintainer explicitly asks to close one side.
-
-Repository profiles can further narrow apply. ClawHub is intentionally stricter:
-it reviews every issue and PR, but apply may close only PRs where current `main`
-already implements the proposed change with source-backed evidence.
-
-## Dashboard
-
-Last dashboard update: Apr 28, 2026, 14:25 UTC
-
-### Fleet
-
-| Metric | Count |
-| --- | ---: |
-| Covered repositories | 2 |
-| Open issues | 4431 |
-| Open PRs | 3450 |
-| Open items total | 7881 |
-| Reviewed files | 7454 |
-| Unreviewed open items | 427 |
-| Due now by cadence | 3299 |
-| Proposed closes awaiting apply | 0 |
-| Closed by Codex apply | 10386 |
-| Failed or stale reviews | 5 |
-| Archived closed files | 13554 |
-
-### Repositories
-
-| Repository | Open | Reviewed | Unreviewed | Due | Proposed closes | Closed | Latest review | Latest close | Comments synced, 1h |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: | --- | --- | ---: |
-| [OpenClaw](https://github.com/openclaw/openclaw) | 6968 | 6548 | 420 | 3249 | 0 | 10383 | Apr 28, 2026, 14:24 UTC | Apr 28, 2026, 14:24 UTC | 730 |
-| [ClawHub](https://github.com/openclaw/clawhub) | 913 | 906 | 7 | 50 | 0 | 3 | Apr 28, 2026, 14:22 UTC | Apr 28, 2026, 08:18 UTC | 40 |
-
-### Current Runs
-
-| Repository | State | Updated | Run |
-| --- | --- | --- | --- |
-| [OpenClaw](https://github.com/openclaw/openclaw) | Apply finished | Apr 28, 2026, 14:25 UTC | [run](https://github.com/openclaw/clawsweeper/actions/runs/25058564466) |
-| [ClawHub](https://github.com/openclaw/clawhub) | Review comments checked | Apr 28, 2026, 14:24 UTC | [run](https://github.com/openclaw/clawsweeper/actions/runs/25058345601) |
-
-### Fleet Activity
-
-Latest review: Apr 28, 2026, 14:24 UTC. Latest close: Apr 28, 2026, 14:24 UTC. Latest comment sync: Apr 28, 2026, 14:25 UTC.
-
-| Window | Reviews | Close decisions | Keep-open decisions | Failed/stale reviews | Closed | Comments synced | Apply skips |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| Last 15 minutes | 30 | 4 | 26 | 0 | 3 | 63 | 1 |
-| Last hour | 586 | 16 | 570 | 0 | 35 | 770 | 1 |
-| Last 24 hours | 3827 | 159 | 3668 | 2 | 489 | 1723 | 13 |
-
-### Recently Closed Across Repos
-
-| Repository | Item | Title | Reason | Closed | Report |
-| --- | --- | --- | --- | --- | --- |
-| [openclaw/openclaw](https://github.com/openclaw/openclaw) | [#73600](https://github.com/openclaw/openclaw/pull/73600) | fix: resolve redundant docker probe when sandbox is off (#73586) | duplicate or superseded | Apr 28, 2026, 14:24 UTC | [records/openclaw-openclaw/closed/73600.md](https://github.com/openclaw/clawsweeper/blob/main/records/openclaw-openclaw/closed/73600.md) |
-| [openclaw/openclaw](https://github.com/openclaw/openclaw) | [#73599](https://github.com/openclaw/openclaw/issues/73599) | Yuanbao plugin missing channelConfigs metadata | belongs on ClawHub | Apr 28, 2026, 14:22 UTC | [records/openclaw-openclaw/closed/73599.md](https://github.com/openclaw/clawsweeper/blob/main/records/openclaw-openclaw/closed/73599.md) |
-| [openclaw/openclaw](https://github.com/openclaw/openclaw) | [#73596](https://github.com/openclaw/openclaw/issues/73596) | [Bug]:一坨屎啊！一坨大大的屎山代码写的一大坨屎！ | not actionable | Apr 28, 2026, 14:22 UTC | [records/openclaw-openclaw/closed/73596.md](https://github.com/openclaw/clawsweeper/blob/main/records/openclaw-openclaw/closed/73596.md) |
-| [openclaw/openclaw](https://github.com/openclaw/openclaw) | [#73589](https://github.com/openclaw/openclaw/pull/73589) | feat: hardware-aware Gemma 4 setup with auto-provisioning and Docker sandbox | not actionable in this repository | Apr 28, 2026, 14:07 UTC | [records/openclaw-openclaw/closed/73589.md](https://github.com/openclaw/clawsweeper/blob/main/records/openclaw-openclaw/closed/73589.md) |
-| [openclaw/openclaw](https://github.com/openclaw/openclaw) | [#68651](https://github.com/openclaw/openclaw/pull/68651) | Gateway/config: add models.pricing.enabled to skip pricing bootstrap | already implemented on main | Apr 28, 2026, 14:07 UTC | [records/openclaw-openclaw/closed/68651.md](https://github.com/openclaw/clawsweeper/blob/main/records/openclaw-openclaw/closed/68651.md) |
-| [openclaw/openclaw](https://github.com/openclaw/openclaw) | [#65010](https://github.com/openclaw/openclaw/pull/65010) | fix: use isActive+isStopped instead of isStreaming for steer message injection | duplicate or superseded | Apr 28, 2026, 14:04 UTC | [records/openclaw-openclaw/closed/65010.md](https://github.com/openclaw/clawsweeper/blob/main/records/openclaw-openclaw/closed/65010.md) |
-| [openclaw/openclaw](https://github.com/openclaw/openclaw) | [#59883](https://github.com/openclaw/openclaw/pull/59883) | feat(acp): retry ACP turns on transient OpenAI/Codex failures | not actionable | Apr 28, 2026, 14:04 UTC | [records/openclaw-openclaw/closed/59883.md](https://github.com/openclaw/clawsweeper/blob/main/records/openclaw-openclaw/closed/59883.md) |
-| [openclaw/openclaw](https://github.com/openclaw/openclaw) | [#56369](https://github.com/openclaw/openclaw/issues/56369) | [Bug]: gateway:startup hook fires before channel adapters are ready — message tool fails silently | already implemented on main | Apr 28, 2026, 14:04 UTC | [records/openclaw-openclaw/closed/56369.md](https://github.com/openclaw/clawsweeper/blob/main/records/openclaw-openclaw/closed/56369.md) |
-| [openclaw/openclaw](https://github.com/openclaw/openclaw) | [#55687](https://github.com/openclaw/openclaw/issues/55687) | Bedrock converse-stream: 'Cannot read properties of undefined (reading replace)' crashes agent before API call | already implemented on main | Apr 28, 2026, 14:04 UTC | [records/openclaw-openclaw/closed/55687.md](https://github.com/openclaw/clawsweeper/blob/main/records/openclaw-openclaw/closed/55687.md) |
-| [openclaw/openclaw](https://github.com/openclaw/openclaw) | [#55587](https://github.com/openclaw/openclaw/issues/55587) | gateway status misreports LaunchAgent as not installed during launchctl gaps | already implemented on main | Apr 28, 2026, 14:03 UTC | [records/openclaw-openclaw/closed/55587.md](https://github.com/openclaw/clawsweeper/blob/main/records/openclaw-openclaw/closed/55587.md) |
-
-<details>
-<summary>Recently Reviewed Across Repos</summary>
-
-<br>
-
-| Repository | Item | Title | Outcome | Status | Reviewed |
-| --- | --- | --- | --- | --- | --- |
-| [openclaw/openclaw](https://github.com/openclaw/openclaw) | [#73338](https://github.com/openclaw/openclaw/pull/73338) | fix(tui): follow active gateway port | [keep_open / kept_open](https://github.com/openclaw/clawsweeper/blob/main/records/openclaw-openclaw/items/73338.md) | complete | Apr 28, 2026, 14:24 UTC |
-| [openclaw/openclaw](https://github.com/openclaw/openclaw) | [#73601](https://github.com/openclaw/openclaw/issues/73601) | [Bug]: Google Live browser Talk stuck at \"Connecting Talk…\" and failed sessions wedge embedded runner | [keep_open / kept_open](https://github.com/openclaw/clawsweeper/blob/main/records/openclaw-openclaw/items/73601.md) | complete | Apr 28, 2026, 14:23 UTC |
-| [openclaw/clawhub](https://github.com/openclaw/clawhub) | [#1799](https://github.com/openclaw/clawhub/issues/1799) | ZenQuote Skill False Positive - VirusTotal Misidentification | [keep_open / kept_open](https://github.com/openclaw/clawsweeper/blob/main/records/openclaw-clawhub/items/1799.md) | complete | Apr 28, 2026, 14:22 UTC |
-| [openclaw/clawhub](https://github.com/openclaw/clawhub) | [#1653](https://github.com/openclaw/clawhub/issues/1653) | add skill: robert0812/maton-browse-plan | [keep_open / kept_open](https://github.com/openclaw/clawsweeper/blob/main/records/openclaw-clawhub/items/1653.md) | complete | Apr 28, 2026, 14:22 UTC |
-| [openclaw/clawhub](https://github.com/openclaw/clawhub) | [#1586](https://github.com/openclaw/clawhub/issues/1586) | ClawHub Security flagged skill as suspicious | [keep_open / kept_open](https://github.com/openclaw/clawsweeper/blob/main/records/openclaw-clawhub/items/1586.md) | complete | Apr 28, 2026, 14:22 UTC |
-| [openclaw/clawhub](https://github.com/openclaw/clawhub) | [#1738](https://github.com/openclaw/clawhub/issues/1738) | False Positive: SkillWiki skill incorrectly flagged as suspicious | [keep_open / kept_open](https://github.com/openclaw/clawsweeper/blob/main/records/openclaw-clawhub/items/1738.md) | complete | Apr 28, 2026, 14:22 UTC |
-| [openclaw/clawhub](https://github.com/openclaw/clawhub) | [#1811](https://github.com/openclaw/clawhub/issues/1811) | Skill flagged — suspicious patterns detected (trade-router, re-bruce-wayne) | [keep_open / kept_open](https://github.com/openclaw/clawsweeper/blob/main/records/openclaw-clawhub/items/1811.md) | complete | Apr 28, 2026, 14:22 UTC |
-| [openclaw/clawhub](https://github.com/openclaw/clawhub) | [#1744](https://github.com/openclaw/clawhub/issues/1744) | Request: delete stale plugin entries claw-pay-plugin (v0.27, v0.25) from Publisher Plugins | [keep_open / kept_open](https://github.com/openclaw/clawsweeper/blob/main/records/openclaw-clawhub/items/1744.md) | complete | Apr 28, 2026, 14:21 UTC |
-| [openclaw/clawhub](https://github.com/openclaw/clawhub) | [#1858](https://github.com/openclaw/clawhub/pull/1858) | fix(ui): resolve relative skill README links | [keep_open / kept_open](https://github.com/openclaw/clawsweeper/blob/main/records/openclaw-clawhub/items/1858.md) | complete | Apr 28, 2026, 14:21 UTC |
-| [openclaw/clawhub](https://github.com/openclaw/clawhub) | [#1705](https://github.com/openclaw/clawhub/issues/1705) | Skill flagged as suspicious - share-onetime-link | [keep_open / kept_open](https://github.com/openclaw/clawsweeper/blob/main/records/openclaw-clawhub/items/1705.md) | complete | Apr 28, 2026, 14:21 UTC |
-
-</details>
-
-### Repository Details
-
-<details>
-<summary>OpenClaw (openclaw/openclaw)</summary>
-
-<br>
-
-#### Current Run
-
-<!-- clawsweeper-status:openclaw-openclaw:start -->
-**Workflow status**
-
-Repository: [openclaw/openclaw](https://github.com/openclaw/openclaw)
-
-Updated: Apr 28, 2026, 14:25 UTC
-
-State: Apply finished
-
-Apply/comment-sync run finished with 0 fresh closes out of requested limit 2. See apply-report.json for per-item results.
-Run: [https://github.com/openclaw/clawsweeper/actions/runs/25058564466](https://github.com/openclaw/clawsweeper/actions/runs/25058564466)
-<!-- clawsweeper-status:openclaw-openclaw:end -->
-
-#### Queue
-
-| Metric | Count |
-| --- | ---: |
-| Target repository | [openclaw/openclaw](https://github.com/openclaw/openclaw) |
-| Open issues | 3556 |
-| Open PRs | 3412 |
-| Open items total | 6968 |
-| Reviewed files | 6548 |
-| Unreviewed open items | 420 |
-| Archived closed files | 13544 |
-
-#### Review Outcomes
-
-| Metric | Count |
-| --- | ---: |
-| Fresh reviewed issues in the last 7 days | 3371 |
-| Proposed issue closes | 0 (0% of reviewed issues) |
-| Fresh reviewed PRs in the last 7 days | 3173 |
-| Proposed PR closes | 0 (0% of reviewed PRs) |
-| Fresh verified reviews in the last 7 days | 6544 |
-| Proposed closes awaiting apply | 0 (0% of fresh reviews) |
-| Closed by Codex apply | 10383 |
-| Failed or stale reviews | 4 |
-
-#### Cadence
-
-| Metric | Coverage |
-| --- | ---: |
-| Hourly cadence coverage | 37/707 current (670 due, 5.2%) |
-| Hourly hot item cadence (<7d) | 37/707 current (670 due, 5.2%) |
-| Daily cadence coverage | 1842/4000 current (2158 due, 46.1%) |
-| Daily PR cadence | 1544/2767 current (1223 due, 55.8%) |
-| Daily new issue cadence (<30d) | 298/1233 current (935 due, 24.2%) |
-| Weekly older issue cadence | 1840/1841 current (1 due, 99.9%) |
-| Due now by cadence | 3249 |
-
-### Audit Health
-
-<!-- clawsweeper-audit:openclaw-openclaw:start -->
-Repository: [openclaw/openclaw](https://github.com/openclaw/openclaw)
-
-Last audit: Apr 28, 2026, 12:54 UTC
-
-Status: **Action needed**
-
-Targeted review input: `64563,65635,72522,72527,72529,72531,72532,72535,72536,72537`
-
-| Metric | Count |
-| --- | ---: |
-| Scan complete | yes |
-| Open items seen | 6974 |
-| Missing eligible open records | 117 |
-| Missing maintainer-authored open records | 74 |
-| Missing protected open records | 1 |
-| Missing recently-created open records | 237 |
-| Archived records that are open again | 0 |
-| Stale item records | 0 |
-| Duplicate records | 0 |
-| Protected proposed closes | 0 |
-| Stale reviews | 4 |
-
-| Item | Category | Title | Detail |
-| --- | --- | --- | --- |
-| [#64563](https://github.com/openclaw/openclaw/pull/64563) | Missing eligible open | fix(whatsapp): lazy default auth dir for profile state (#64555) | eligible |
-| [#65635](https://github.com/openclaw/openclaw/pull/65635) | Missing eligible open | fix(gateway): keep explicit loopback binds on 127.0.0.1 | eligible |
-| [#72522](https://github.com/openclaw/openclaw/pull/72522) | Missing eligible open | fix(control-ui): keep chat UI mounted across transient reconnects | eligible |
-<!-- clawsweeper-audit:openclaw-openclaw:end -->
-
-#### Latest Run Activity
-
-Latest review: Apr 28, 2026, 14:24 UTC. Latest close: Apr 28, 2026, 14:24 UTC. Latest comment sync: Apr 28, 2026, 14:25 UTC.
-
-| Window | Reviews | Close decisions | Keep-open decisions | Failed/stale reviews | Closed | Comments synced | Apply skips |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| Last 15 minutes | 10 | 4 | 6 | 0 | 3 | 43 | 1 |
-| Last hour | 546 | 16 | 530 | 0 | 35 | 730 | 1 |
-| Last 24 hours | 2911 | 156 | 2755 | 1 | 479 | 942 | 13 |
-
-#### Recently Closed
-
-| Item | Title | Reason | Closed | Report |
-| --- | --- | --- | --- | --- |
-| [#73600](https://github.com/openclaw/openclaw/pull/73600) | fix: resolve redundant docker probe when sandbox is off (#73586) | duplicate or superseded | Apr 28, 2026, 14:24 UTC | [records/openclaw-openclaw/closed/73600.md](https://github.com/openclaw/clawsweeper/blob/main/records/openclaw-openclaw/closed/73600.md) |
-| [#73599](https://github.com/openclaw/openclaw/issues/73599) | Yuanbao plugin missing channelConfigs metadata | belongs on ClawHub | Apr 28, 2026, 14:22 UTC | [records/openclaw-openclaw/closed/73599.md](https://github.com/openclaw/clawsweeper/blob/main/records/openclaw-openclaw/closed/73599.md) |
-| [#73596](https://github.com/openclaw/openclaw/issues/73596) | [Bug]:一坨屎啊！一坨大大的屎山代码写的一大坨屎！ | not actionable | Apr 28, 2026, 14:22 UTC | [records/openclaw-openclaw/closed/73596.md](https://github.com/openclaw/clawsweeper/blob/main/records/openclaw-openclaw/closed/73596.md) |
-| [#73589](https://github.com/openclaw/openclaw/pull/73589) | feat: hardware-aware Gemma 4 setup with auto-provisioning and Docker sandbox | not actionable in this repository | Apr 28, 2026, 14:07 UTC | [records/openclaw-openclaw/closed/73589.md](https://github.com/openclaw/clawsweeper/blob/main/records/openclaw-openclaw/closed/73589.md) |
-| [#68651](https://github.com/openclaw/openclaw/pull/68651) | Gateway/config: add models.pricing.enabled to skip pricing bootstrap | already implemented on main | Apr 28, 2026, 14:07 UTC | [records/openclaw-openclaw/closed/68651.md](https://github.com/openclaw/clawsweeper/blob/main/records/openclaw-openclaw/closed/68651.md) |
-| [#65010](https://github.com/openclaw/openclaw/pull/65010) | fix: use isActive+isStopped instead of isStreaming for steer message injection | duplicate or superseded | Apr 28, 2026, 14:04 UTC | [records/openclaw-openclaw/closed/65010.md](https://github.com/openclaw/clawsweeper/blob/main/records/openclaw-openclaw/closed/65010.md) |
-| [#59883](https://github.com/openclaw/openclaw/pull/59883) | feat(acp): retry ACP turns on transient OpenAI/Codex failures | not actionable | Apr 28, 2026, 14:04 UTC | [records/openclaw-openclaw/closed/59883.md](https://github.com/openclaw/clawsweeper/blob/main/records/openclaw-openclaw/closed/59883.md) |
-| [#56369](https://github.com/openclaw/openclaw/issues/56369) | [Bug]: gateway:startup hook fires before channel adapters are ready — message tool fails silently | already implemented on main | Apr 28, 2026, 14:04 UTC | [records/openclaw-openclaw/closed/56369.md](https://github.com/openclaw/clawsweeper/blob/main/records/openclaw-openclaw/closed/56369.md) |
-| [#55687](https://github.com/openclaw/openclaw/issues/55687) | Bedrock converse-stream: 'Cannot read properties of undefined (reading replace)' crashes agent before API call | already implemented on main | Apr 28, 2026, 14:04 UTC | [records/openclaw-openclaw/closed/55687.md](https://github.com/openclaw/clawsweeper/blob/main/records/openclaw-openclaw/closed/55687.md) |
-| [#55587](https://github.com/openclaw/openclaw/issues/55587) | gateway status misreports LaunchAgent as not installed during launchctl gaps | already implemented on main | Apr 28, 2026, 14:03 UTC | [records/openclaw-openclaw/closed/55587.md](https://github.com/openclaw/clawsweeper/blob/main/records/openclaw-openclaw/closed/55587.md) |
-
-#### Recently Reviewed
-
-| Item | Title | Outcome | Status | Reviewed |
-| --- | --- | --- | --- | --- |
-| [#73338](https://github.com/openclaw/openclaw/pull/73338) | fix(tui): follow active gateway port | [keep_open / kept_open](https://github.com/openclaw/clawsweeper/blob/main/records/openclaw-openclaw/items/73338.md) | complete | Apr 28, 2026, 14:24 UTC |
-| [#73601](https://github.com/openclaw/openclaw/issues/73601) | [Bug]: Google Live browser Talk stuck at \"Connecting Talk…\" and failed sessions wedge embedded runner | [keep_open / kept_open](https://github.com/openclaw/clawsweeper/blob/main/records/openclaw-openclaw/items/73601.md) | complete | Apr 28, 2026, 14:23 UTC |
-| [#73495](https://github.com/openclaw/openclaw/pull/73495) | fix(telegram): document and warn when replyToMode silently disables tool-progress preview | [keep_open / kept_open](https://github.com/openclaw/clawsweeper/blob/main/records/openclaw-openclaw/items/73495.md) | complete | Apr 28, 2026, 14:20 UTC |
-| [#73384](https://github.com/openclaw/openclaw/pull/73384) | [plugin sdk] Consolidate workflow seams, fixtures, and host-hook recipes | [keep_open / kept_open](https://github.com/openclaw/clawsweeper/blob/main/records/openclaw-openclaw/items/73384.md) | complete | Apr 28, 2026, 14:20 UTC |
-| [#73598](https://github.com/openclaw/openclaw/pull/73598) | feat: add local AlpaCore MCP bridge | [close / skipped_changed_since_review](https://github.com/openclaw/clawsweeper/blob/main/records/openclaw-openclaw/items/73598.md) | complete | Apr 28, 2026, 14:16 UTC |
-| [#73563](https://github.com/openclaw/openclaw/pull/73563) | fix(security): add session transcript redaction guards at bare appendMessage call sites | [keep_open / kept_open](https://github.com/openclaw/clawsweeper/blob/main/records/openclaw-openclaw/items/73563.md) | complete | Apr 28, 2026, 14:15 UTC |
-| [#73583](https://github.com/openclaw/openclaw/pull/73583) | Fix Telegram status and group reply delivery | [keep_open / kept_open](https://github.com/openclaw/clawsweeper/blob/main/records/openclaw-openclaw/items/73583.md) | complete | Apr 28, 2026, 14:11 UTC |
-| [#73453](https://github.com/openclaw/openclaw/pull/73453) | fix(whatsapp): detect group @mentions when self is in allowFrom (#49317) | [keep_open / kept_open](https://github.com/openclaw/clawsweeper/blob/main/records/openclaw-openclaw/items/73453.md) | complete | Apr 28, 2026, 14:10 UTC |
-| [#69310](https://github.com/openclaw/openclaw/pull/69310) | fix: surface dropped media to users instead of silently swallowing | [keep_open / kept_open](https://github.com/openclaw/clawsweeper/blob/main/records/openclaw-openclaw/items/69310.md) | complete | Apr 28, 2026, 14:08 UTC |
-| [#73595](https://github.com/openclaw/openclaw/issues/73595) | Runtime injection tags (`<system-reminder>`, `<previous_response>`) leak verbatim to delivery channels when model is in degraded state | [keep_open / kept_open](https://github.com/openclaw/clawsweeper/blob/main/records/openclaw-openclaw/items/73595.md) | complete | Apr 28, 2026, 14:08 UTC |
-
-</details>
-
-<details>
-<summary>ClawHub (openclaw/clawhub)</summary>
-
-<br>
-
-#### Current Run
-
-<!-- clawsweeper-status:openclaw-clawhub:start -->
-**Workflow status**
-
-Repository: [openclaw/clawhub](https://github.com/openclaw/clawhub)
-
-Updated: Apr 28, 2026, 14:24 UTC
-
-State: Review comments checked
-
-Checked selected durable Codex review comments and synced missing or stale comments. Synced: 20. Item numbers: 1525,1543,1565,1569,1576,1586,1653,1705,1738,1741,1744,1785,1799,1808,1811,1812,1814,1816,1858,1863.
-Run: [https://github.com/openclaw/clawsweeper/actions/runs/25058345601](https://github.com/openclaw/clawsweeper/actions/runs/25058345601)
-<!-- clawsweeper-status:openclaw-clawhub:end -->
-
-#### Queue
-
-| Metric | Count |
-| --- | ---: |
-| Target repository | [openclaw/clawhub](https://github.com/openclaw/clawhub) |
-| Open issues | 875 |
-| Open PRs | 38 |
-| Open items total | 913 |
-| Reviewed files | 906 |
-| Unreviewed open items | 7 |
-| Archived closed files | 10 |
-
-#### Review Outcomes
-
-| Metric | Count |
-| --- | ---: |
-| Fresh reviewed issues in the last 7 days | 873 |
-| Proposed issue closes | 0 (0% of reviewed issues) |
-| Fresh reviewed PRs in the last 7 days | 32 |
-| Proposed PR closes | 0 (0% of reviewed PRs) |
-| Fresh verified reviews in the last 7 days | 905 |
-| Proposed closes awaiting apply | 0 (0% of fresh reviews) |
-| Closed by Codex apply | 3 |
-| Failed or stale reviews | 1 |
-
-#### Cadence
-
-| Metric | Coverage |
-| --- | ---: |
-| Hourly cadence coverage | 11/53 current (42 due, 20.8%) |
-| Hourly hot item cadence (<7d) | 11/53 current (42 due, 20.8%) |
-| Daily cadence coverage | 221/221 current (0 due, 100%) |
-| Daily PR cadence | 21/21 current (0 due, 100%) |
-| Daily new issue cadence (<30d) | 200/200 current (0 due, 100%) |
-| Weekly older issue cadence | 631/632 current (1 due, 99.8%) |
-| Due now by cadence | 50 |
-
-### Audit Health
-
-<!-- clawsweeper-audit:openclaw-clawhub:start -->
-Repository: [openclaw/clawhub](https://github.com/openclaw/clawhub)
-
-Last audit: Apr 28, 2026, 12:54 UTC
-
-Status: **Passing**
-
-Targeted review input: `756`
-
-| Metric | Count |
-| --- | ---: |
-| Scan complete | yes |
-| Open items seen | 912 |
-| Missing eligible open records | 0 |
-| Missing maintainer-authored open records | 7 |
-| Missing protected open records | 0 |
-| Missing recently-created open records | 0 |
-| Archived records that are open again | 0 |
-| Stale item records | 0 |
-| Duplicate records | 0 |
-| Protected proposed closes | 0 |
-| Stale reviews | 1 |
-
-| Item | Category | Title | Detail |
-| --- | --- | --- | --- |
-| _None_ |  |  |  |
-<!-- clawsweeper-audit:openclaw-clawhub:end -->
-
-#### Latest Run Activity
-
-Latest review: Apr 28, 2026, 14:22 UTC. Latest close: Apr 28, 2026, 08:18 UTC. Latest comment sync: Apr 28, 2026, 14:24 UTC.
-
-| Window | Reviews | Close decisions | Keep-open decisions | Failed/stale reviews | Closed | Comments synced | Apply skips |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| Last 15 minutes | 20 | 0 | 20 | 0 | 0 | 20 | 0 |
-| Last hour | 40 | 0 | 40 | 0 | 0 | 40 | 0 |
-| Last 24 hours | 916 | 3 | 913 | 1 | 10 | 781 | 0 |
-
-#### Recently Closed
-
-| Item | Title | Reason | Closed | Report |
-| --- | --- | --- | --- | --- |
-| [#1841](https://github.com/openclaw/clawhub/pull/1841) | fix: calibrate VT Code Insight moderation | closed externally after review | Apr 28, 2026, 08:18 UTC | [records/openclaw-clawhub/closed/1841.md](https://github.com/openclaw/clawsweeper/blob/main/records/openclaw-clawhub/closed/1841.md) |
-| [#1830](https://github.com/openclaw/clawhub/issues/1830) | False positive: skill-factory incorrectly flagged as suspicious | closed externally after review | Apr 28, 2026, 08:18 UTC | [records/openclaw-clawhub/closed/1830.md](https://github.com/openclaw/clawsweeper/blob/main/records/openclaw-clawhub/closed/1830.md) |
-| [#1517](https://github.com/openclaw/clawhub/issues/1517) | [Appeal] Skill Wrongly Flagged: abu-shotai/ai-video-remix | closed externally after review | Apr 28, 2026, 07:43 UTC | [records/openclaw-clawhub/closed/1517.md](https://github.com/openclaw/clawsweeper/blob/main/records/openclaw-clawhub/closed/1517.md) |
-| [#125](https://github.com/openclaw/clawhub/issues/125) | New Provider Plugin: ClawRouter — 30+ models, smart routing, x402 payments | closed externally after review | Apr 28, 2026, 06:41 UTC | [records/openclaw-clawhub/closed/125.md](https://github.com/openclaw/clawsweeper/blob/main/records/openclaw-clawhub/closed/125.md) |
-| [#1699](https://github.com/openclaw/clawhub/issues/1699) | Plugin search returns 500, and plugin catalog breaks after page 2 | closed externally after review | Apr 28, 2026, 05:46 UTC | [records/openclaw-clawhub/closed/1699.md](https://github.com/openclaw/clawsweeper/blob/main/records/openclaw-clawhub/closed/1699.md) |
-| [#85](https://github.com/openclaw/clawhub/issues/85) | Clawhub Sort feature shows wrong results | closed externally after review | Apr 28, 2026, 05:46 UTC | [records/openclaw-clawhub/closed/85.md](https://github.com/openclaw/clawsweeper/blob/main/records/openclaw-clawhub/closed/85.md) |
-| [#1736](https://github.com/openclaw/clawhub/pull/1736) | Align hover stats with denormalized counters and fix seed digest stat drift | already implemented on main | Apr 28, 2026, 05:18 UTC | [records/openclaw-clawhub/closed/1736.md](https://github.com/openclaw/clawsweeper/blob/main/records/openclaw-clawhub/closed/1736.md) |
-| [#1324](https://github.com/openclaw/clawhub/pull/1324) | feat: add --dry-run flag to package publish command | already implemented on main | Apr 28, 2026, 05:18 UTC | [records/openclaw-clawhub/closed/1324.md](https://github.com/openclaw/clawsweeper/blob/main/records/openclaw-clawhub/closed/1324.md) |
-| [#1240](https://github.com/openclaw/clawhub/pull/1240) | fix: use esbuild minification for safari builds | already implemented on main | Apr 28, 2026, 05:18 UTC | [records/openclaw-clawhub/closed/1240.md](https://github.com/openclaw/clawsweeper/blob/main/records/openclaw-clawhub/closed/1240.md) |
-| [#1842](https://github.com/openclaw/clawhub/pull/1842) | fix: constrain plugin catalog queries | closed externally after review | Apr 28, 2026, 05:05 UTC | [records/openclaw-clawhub/closed/1842.md](https://github.com/openclaw/clawsweeper/blob/main/records/openclaw-clawhub/closed/1842.md) |
-
-#### Recently Reviewed
-
-| Item | Title | Outcome | Status | Reviewed |
-| --- | --- | --- | --- | --- |
-| [#1799](https://github.com/openclaw/clawhub/issues/1799) | ZenQuote Skill False Positive - VirusTotal Misidentification | [keep_open / kept_open](https://github.com/openclaw/clawsweeper/blob/main/records/openclaw-clawhub/items/1799.md) | complete | Apr 28, 2026, 14:22 UTC |
-| [#1653](https://github.com/openclaw/clawhub/issues/1653) | add skill: robert0812/maton-browse-plan | [keep_open / kept_open](https://github.com/openclaw/clawsweeper/blob/main/records/openclaw-clawhub/items/1653.md) | complete | Apr 28, 2026, 14:22 UTC |
-| [#1586](https://github.com/openclaw/clawhub/issues/1586) | ClawHub Security flagged skill as suspicious | [keep_open / kept_open](https://github.com/openclaw/clawsweeper/blob/main/records/openclaw-clawhub/items/1586.md) | complete | Apr 28, 2026, 14:22 UTC |
-| [#1738](https://github.com/openclaw/clawhub/issues/1738) | False Positive: SkillWiki skill incorrectly flagged as suspicious | [keep_open / kept_open](https://github.com/openclaw/clawsweeper/blob/main/records/openclaw-clawhub/items/1738.md) | complete | Apr 28, 2026, 14:22 UTC |
-| [#1811](https://github.com/openclaw/clawhub/issues/1811) | Skill flagged — suspicious patterns detected (trade-router, re-bruce-wayne) | [keep_open / kept_open](https://github.com/openclaw/clawsweeper/blob/main/records/openclaw-clawhub/items/1811.md) | complete | Apr 28, 2026, 14:22 UTC |
-| [#1744](https://github.com/openclaw/clawhub/issues/1744) | Request: delete stale plugin entries claw-pay-plugin (v0.27, v0.25) from Publisher Plugins | [keep_open / kept_open](https://github.com/openclaw/clawsweeper/blob/main/records/openclaw-clawhub/items/1744.md) | complete | Apr 28, 2026, 14:21 UTC |
-| [#1858](https://github.com/openclaw/clawhub/pull/1858) | fix(ui): resolve relative skill README links | [keep_open / kept_open](https://github.com/openclaw/clawsweeper/blob/main/records/openclaw-clawhub/items/1858.md) | complete | Apr 28, 2026, 14:21 UTC |
-| [#1705](https://github.com/openclaw/clawhub/issues/1705) | Skill flagged as suspicious - share-onetime-link | [keep_open / kept_open](https://github.com/openclaw/clawsweeper/blob/main/records/openclaw-clawhub/items/1705.md) | complete | Apr 28, 2026, 14:21 UTC |
-| [#1576](https://github.com/openclaw/clawhub/issues/1576) | False positive: DCL Sentinel Trace flagged as Suspicious — webhook is the product, not a risk | [keep_open / kept_open](https://github.com/openclaw/clawsweeper/blob/main/records/openclaw-clawhub/items/1576.md) | complete | Apr 28, 2026, 14:21 UTC |
-| [#1808](https://github.com/openclaw/clawhub/issues/1808) | Re-evaluation request: topview-skill (official Topview AI client) — medium-suspicious verdict triggered by emoji ZWJ false positive | [keep_open / kept_open](https://github.com/openclaw/clawsweeper/blob/main/records/openclaw-clawhub/items/1808.md) | complete | Apr 28, 2026, 14:21 UTC |
-
-</details>
-
-## How It Works
-
-ClawSweeper is split into a scheduler, a review lane, and an apply lane.
-
-### Scheduler
-
-The scheduler decides what to scan and how often. New and active items get more
-attention; older quiet items fall back to a slower cadence.
-
-- hot/new and recently active items are checked hourly, with a 5-minute intake
-  schedule for the newest queue edge
-- target repositories can forward issue and PR events with
-  `repository_dispatch`; those exact item runs use a dedicated single job to
-  review one item, sync the durable comment, and apply only safe close
-  proposals for that same item
-- pull requests and issues younger than 30 days are checked daily once they
-  leave the hot window
-- older inactive issues are checked weekly
-- apply wakes every 15 minutes and exits quickly when there are no unchanged
-  high-confidence close proposals
-
-### Review Lane
-
-Review is proposal-only. It never closes items.
-
-- A planner scans open issues and PRs, then assigns exact item numbers to shards.
-- Manual runs can pass `item_number` or comma-separated `item_numbers` to review
-  exact Audit Health findings without scanning for a normal batch.
-- Each shard checks out the selected target repository at `main`.
-- Codex reviews with `gpt-5.5`, high reasoning, fast service tier, and a
-  10-minute per-item timeout.
-- Each item becomes a flat report under
-  `records/<repo-slug>/items/<number>.md` with the decision, evidence,
-  suggested comment, runtime metadata, and GitHub snapshot hash.
-- High-confidence allowed close decisions become `proposed_close`.
-- After publish, the lane checks the selected items' single marker-backed Codex
-  review comment. Missing comments and missing metadata are synced immediately;
-  existing comments are refreshed only when stale, currently weekly.
-
-### Apply Lane
-
-Apply reads existing reports and mutates GitHub only when the stored review is
-still valid.
-
-- Updates the single marker-backed Codex automated review comment in place.
-- Closes only unchanged high-confidence proposals.
-- Reuses the review comment when closing; no duplicate close comment.
-- Moves closed or already-closed reports to
-  `records/<repo-slug>/closed/<number>.md`.
-- Moves reopened archived reports back to the repo’s `items/` folder as stale.
-- Commits checkpoints and dashboard heartbeats during long runs.
-
-Apply wakes every 15 minutes, no-ops when there are no unchanged
-high-confidence close proposals, and narrows scheduled runs to the currently
-eligible proposal list so idle runs do not scan unrelated keep-open records.
-It defaults to all item kinds, no age floor, a 2-second close delay, and 50
-fresh closes per checkpoint. If it reaches the requested limit, it queues
-another apply run with the same settings.
-
-Exact event runs skip the bulk planner, shard matrix, artifact upload, and
-separate publish job. They still use the same review and apply code paths, but
-only for the selected item number and only with immediate-safe reasons enabled
-by default: `implemented_on_main` and `duplicate_or_superseded`.
-`stale_insufficient_info` is never applied to young items; apply requires those
-issue reports to be at least 30 days old unless a manual run explicitly changes
-the threshold.
-
-The README dashboard is fleet-scoped. Each configured repository gets its own
-record folder, workflow status marker, audit-health marker, cadence counts, and
-recent activity section. The top dashboard aggregates those repository snapshots
-so event runs from one repo do not hide the state of another.
-
-There is still one deterministic apply path for writes. Review can propose and
-sync stale public review comments, but closing remains guarded by apply so a
-fresh GitHub snapshot, labels, maintainer-authorship, and unchanged item state
-are checked immediately before mutation.
-
-### Safety Model
-
-- Maintainer-authored items are excluded from automated closes.
-- Protected labels block close proposals.
-- Open PRs with GitHub closing references block issue closes until the PR is
-  resolved.
-- Open same-author issue/PR pairs block one-sided closes.
-- Codex runs without GitHub write tokens.
-- Event jobs create target write and report-push credentials only after Codex
-  exits.
-- CI makes the target checkout read-only for reviews.
-- Reviews fail if Codex leaves tracked or untracked changes behind.
-- Snapshot changes block apply unless the only change is the bot’s own review
-  comment.
-
-### Audit
-
-`pnpm run audit` compares live GitHub state with generated records without moving
-files. It reports missing open records, archived open records, stale records,
-duplicates, protected-label proposed closes, and stale review-status records.
-Protected proposed closes are reported only for active repo `items/` records
-because archived repo `closed/` records are historical and cannot be applied.
-Missing open records are classified as eligible, maintainer-authored, protected,
-or recently created so strict audit mode can flag actionable drift without
-treating expected queue lag or excluded items as failures.
-Use `--update-dashboard` to publish the latest audit health into this README
-without making every normal dashboard heartbeat scan all open GitHub items.
-Audit Health includes a copyable `item_numbers` input for reviewable findings
-such as missing eligible records, reopened archived records, and stale reviews.
-The workflow refreshes Audit Health on a separate six-hour schedule, and it can
-be run manually with `audit_dashboard=true`.
-
-## Local Run
-
-Requires Node 24.
+- stale issue older than the configured age floor with too little data to verify
+
+Safety defaults:
+
+- Review lanes are proposal-only. They do not comment or close.
+- Maintainer-authored items are not auto-closed.
+- Protected labels block auto-close: `security`, `beta-blocker`,
+  `release-blocker`, `maintainer`.
+- Issues with open PRs using closing syntax such as `Fixes #123` stay open until
+  the PR is merged or closed.
+- Open issue/PR pairs from the same author stay open together unless the paired
+  item is already resolved or a maintainer explicitly asks to close one side.
+- Apply re-fetches live GitHub state before any comment or close mutation.
+- Snapshot or `updated_at` drift blocks apply unless the only change is the
+  existing ClawSweeper review comment.
+- Codex subprocesses do not receive GitHub, GitHub App, OpenAI, or Codex tokens
+  through the environment.
+
+Do not run live apply/close commands unless Firat explicitly asks.
+
+## Repository Layout
+
+- Main code: `src/clawsweeper.ts`
+- Repository policy: `src/repository-profiles.ts`
+- Review prompt: `prompts/review-item.md`
+- Decision schema: `schema/clawsweeper-decision.schema.json`
+- Tests: `test/clawsweeper.test.mjs`
+- Sweep workflow: `.github/workflows/sweep.yml`
+- Target dispatcher docs: `docs/target-dispatcher.md`
+- Generated records: `records/<repo-slug>/items/<number>.md`
+- Archived records: `records/<repo-slug>/closed/<number>.md`
+- Scratch output: `.artifacts/`, `artifacts/`, `apply-report.json`
+
+Preserve the flat `items/` and `closed/` report layout per repository slug. Do
+not split reports into issue/PR subtrees.
+
+## Requirements
+
+- Node.js 24+
+- pnpm 10+
+- GitHub CLI (`gh`) for live GitHub reads/mutations
+- Codex CLI for review runs in CI/local review mode
+- A local checkout of `nearai/ironclaw` for review runs
+
+Install dependencies:
 
 ```bash
-source ~/.profile
-corepack enable
+cd /Volumes/NVME/iron-clawsweeper
 pnpm install
 pnpm run build
-pnpm run plan -- --target-repo openclaw/openclaw --batch-size 5 --shard-count 100 --max-pages 250 --codex-model gpt-5.5 --codex-reasoning-effort high --codex-service-tier fast
-pnpm run review -- --target-repo openclaw/openclaw --target-dir ../openclaw --batch-size 5 --max-pages 250 --artifact-dir artifacts/reviews --codex-model gpt-5.5 --codex-reasoning-effort high --codex-service-tier fast --codex-timeout-ms 600000
-pnpm run apply-artifacts -- --target-repo openclaw/openclaw --artifact-dir artifacts/reviews
-pnpm run audit -- --target-repo openclaw/openclaw --max-pages 250 --sample-limit 25 --update-dashboard
-pnpm run reconcile -- --target-repo openclaw/openclaw --dry-run
 ```
 
-Apply unchanged proposals later:
+Optional local target checkout:
 
 ```bash
-source ~/.profile
-corepack enable
-pnpm run apply-decisions -- --target-repo openclaw/openclaw --limit 20 --apply-kind all
+cd /Volumes/NVME
+git clone --depth=1 https://github.com/nearai/ironclaw.git ironclaw
+cd /Volumes/NVME/iron-clawsweeper
 ```
 
-Sync durable review comments without closing:
+## Local Pi Usage
+
+This repository includes project-local Pi settings in `.pi/settings.json`.
+From the repo root, run `pi` to load `AGENTS.md` context, or use Pi print mode
+for one-off maintenance prompts:
 
 ```bash
-source ~/.profile
-corepack enable
-pnpm run apply-decisions -- --target-repo openclaw/openclaw --sync-comments-only --comment-sync-min-age-days 7 --processed-limit 1000 --limit 0
+pi -p "Review the IronClaw ClawSweeper profile and identify rollout risks"
 ```
 
-Manual review runs are proposal-only even if `--apply-closures` or workflow input `apply_closures=true` is set. Use `apply_existing=true` to apply unchanged proposals later. Scheduled apply runs process both issues and pull requests by default, subject to the selected repository profile; pass `target_repo`, `apply_kind=issue`, or `apply_kind=pull_request` to narrow a manual run.
+Pi is for local development assistance. The live sweeper runtime still uses
+Codex unless the runtime is ported separately.
 
-Scheduled runs cover both configured profiles. `openclaw/openclaw` keeps the
-existing cadence; `openclaw/clawhub` runs on offset review/apply/audit crons so
-its reports live under `records/openclaw-clawhub/` without colliding with
-default repo records.
+## Safe Dry-Run Testing
 
-Target repositories can opt into event-level latency by installing the
-dispatcher workflow in [docs/target-dispatcher.md](docs/target-dispatcher.md).
-The dispatcher sends `repository_dispatch` events to this repository with the
-target repo and exact item number; ClawSweeper then runs one event job that
-reviews, comments, and checks immediate safe apply instead of waiting for the
-next hot-intake cron or bulk publish lane.
+Use the review path for dry-runs. It writes local artifacts and does not comment,
+close, or push.
 
-## Checks
+### 1. Plan candidates only
 
 ```bash
-pnpm run check
-pnpm run oxformat
+GH_TOKEN="$CLAWSWEEPER_GH_TOKEN" pnpm run plan -- \
+  --target-repo nearai/ironclaw \
+  --batch-size 1 \
+  --shard-count 1 \
+  --max-pages 1 \
+  --codex-model gpt-5.5 \
+  --codex-reasoning-effort high \
+  --codex-service-tier fast
 ```
 
-`oxformat` is an alias for `oxfmt`; there is no separate `oxformat` pnpm package.
-The `CI` GitHub Actions workflow runs `pnpm run check` on pushes, pull requests,
-and manual dispatches.
+### 2. Review one issue or PR without applying
+
+Replace `123` with the target issue/PR number:
+
+```bash
+GH_TOKEN="$CLAWSWEEPER_GH_TOKEN" pnpm run review -- \
+  --target-repo nearai/ironclaw \
+  --target-dir /Volumes/NVME/ironclaw \
+  --artifact-dir .artifacts/dry-run/reviews \
+  --batch-size 1 \
+  --max-pages 1 \
+  --item-number 123 \
+  --codex-model gpt-5.5 \
+  --codex-reasoning-effort high \
+  --codex-sandbox read-only \
+  --codex-service-tier fast \
+  --codex-timeout-ms 600000 \
+  --readonly-openclaw \
+  --shard-index 0 \
+  --shard-count 1
+```
+
+Inspect local artifacts:
+
+```bash
+find .artifacts/dry-run/reviews -maxdepth 2 -type f | sort
+cat .artifacts/dry-run/reviews/*.md
+```
+
+### 3. Import artifacts into a scratch record tree
+
+```bash
+rm -rf .artifacts/dry-run/records
+mkdir -p .artifacts/dry-run/records/items .artifacts/dry-run/records/closed
+
+GH_TOKEN="$CLAWSWEEPER_GH_TOKEN" pnpm run apply-artifacts -- \
+  --target-repo nearai/ironclaw \
+  --artifact-dir .artifacts/dry-run/reviews \
+  --items-dir .artifacts/dry-run/records/items \
+  --closed-dir .artifacts/dry-run/records/closed \
+  --skip-dashboard \
+  --skip-reconcile
+```
+
+This mutates only `.artifacts/dry-run/records`.
+
+### 4. Audit scratch records
+
+```bash
+GH_TOKEN="$CLAWSWEEPER_GH_TOKEN" pnpm run audit -- \
+  --target-repo nearai/ironclaw \
+  --items-dir .artifacts/dry-run/records/items \
+  --closed-dir .artifacts/dry-run/records/closed \
+  --max-pages 1 \
+  --sample-limit 25
+```
+
+## Commands That Can Mutate GitHub
+
+Avoid these unless you intend to sync comments and/or close items:
+
+```bash
+pnpm run apply-decisions
+pnpm run apply-decisions -- --sync-comments-only
+```
+
+`apply-decisions` does not currently have a true dry-run mode. Even
+`--sync-comments-only` can create or update durable review comments. `--limit 0`
+prevents closes, but it is not a safe no-op because comment syncing may still
+happen.
+
+## Applying Reviewed Decisions
+
+Only run this after reviewing generated records and confirming live mutation is
+intended:
+
+```bash
+GH_TOKEN="$CLAWSWEEPER_GH_TOKEN" pnpm run apply-decisions -- \
+  --target-repo nearai/ironclaw \
+  --limit 20 \
+  --apply-kind all
+```
+
+Narrowing examples:
+
+```bash
+# One item only
+pnpm run apply-decisions -- --target-repo nearai/ironclaw --item-number 123 --limit 1
+
+# Issues only
+pnpm run apply-decisions -- --target-repo nearai/ironclaw --apply-kind issue --limit 10
+
+# Only sync comments, no closes — still mutates GitHub comments
+pnpm run apply-decisions -- \
+  --target-repo nearai/ironclaw \
+  --sync-comments-only \
+  --comment-sync-min-age-days 7 \
+  --processed-limit 1000 \
+  --limit 0
+```
 
 ## GitHub Actions Setup
 
-Required secrets:
+Required for Codex review shards:
 
 - `OPENAI_API_KEY`: OpenAI API key used to log Codex in before review shards run.
-- `CODEX_API_KEY`: optional compatibility alias for the same key during the login check.
-- `OPENCLAW_GH_TOKEN`: optional fallback GitHub token for read-heavy target scans and artifact publish reconciliation when the GitHub App token is unavailable.
-- `CLAWSWEEPER_APP_CLIENT_ID`: public GitHub App client ID for `openclaw-ci`. Currently `Iv23liOECG0slfuhz093`.
-- `CLAWSWEEPER_APP_PRIVATE_KEY`: private key for `openclaw-ci`; plan/review jobs use a short-lived GitHub App installation token for read-heavy target API calls, and apply/comment-sync jobs use the app token for comments and closes.
-  Keep App credentials scoped to the `actions/create-github-app-token` step.
-  Review shards run Codex over attacker-controlled issue/PR text, so
-  `codexEnv()` also strips these App variables before spawning Codex.
+- `CODEX_API_KEY`: optional compatibility alias; falls back to `OPENAI_API_KEY`.
 
-Token flow:
+GitHub API authentication options:
 
-- Review shards log Codex in with `OPENAI_API_KEY`, then run without OpenAI or
-  Codex token environment variables.
-- ClawSweeper uses the `openclaw-ci` GitHub App token for read-heavy target
-  context, falling back to `OPENCLAW_GH_TOKEN` only if app secrets are absent.
-- Apply mode uses the app token for review comments and closes, so GitHub
-  attributes mutations to `clawsweeper[bot]`.
-- The built-in `GITHUB_TOKEN` commits generated reports back to this repo.
+- `CLAWSWEEPER_GH_TOKEN`: fallback GitHub token for target scans, artifact publish
+  reconciliation, comment sync, and closes when GitHub App credentials are not
+  configured.
+- `OPENCLAW_GH_TOKEN`: legacy compatibility fallback for existing deployments;
+  prefer `CLAWSWEEPER_GH_TOKEN` for IronClaw.
+- `vars.CLAWSWEEPER_APP_CLIENT_ID`: optional GitHub App client ID.
+- `secrets.CLAWSWEEPER_APP_PRIVATE_KEY`: optional private key for the same app.
 
-Required app permissions:
+When app credentials are configured, workflows create short-lived installation
+tokens for target repository reads and writes. When they are absent, the workflow
+falls back to `CLAWSWEEPER_GH_TOKEN` or legacy `OPENCLAW_GH_TOKEN` where
+supported.
+
+Recommended permissions for app/PAT credentials:
 
 - read access for target scan context
-- write access to target repository issues and pull requests
-- optional Actions write on `openclaw/clawsweeper` for app-token-based run
-  cancellation or dispatch
+- write access to target repository issues and pull requests for apply/comment
+  sync lanes
+- optional Actions write on `serrrfirat/iron-clawsweeper` for dispatch or run
+  cancellation flows
+
+## Event Dispatcher
+
+For lower latency on new/edited issues and PRs, install the dispatcher workflow
+from [`docs/target-dispatcher.md`](docs/target-dispatcher.md) into
+`nearai/ironclaw`.
+
+The dispatcher sends a `repository_dispatch` event to this repository with the
+exact target repo and item number. The receiver runs one review job for that item
+and then checks the immediate-safe apply path.
+
+## Checks
+
+Run before handoff:
+
+```bash
+pnpm run check
+```
+
+This runs:
+
+- TypeScript build
+- oxlint
+- Node unit tests
+- formatting check
+
+Formatting only:
+
+```bash
+pnpm run format
+```
+
+## Useful Live Probes
+
+```bash
+gh run list --repo serrrfirat/iron-clawsweeper --limit 20 \
+  --json databaseId,displayTitle,status,conclusion,createdAt,updatedAt
+
+gh api repos/serrrfirat/iron-clawsweeper/readme --jq '.content' | base64 --decode
+
+gh api graphql -f query='query { repository(owner:"nearai", name:"ironclaw") { issues(states: OPEN) { totalCount } pullRequests(states: OPEN) { totalCount } } }'
+```
+
+## Development Notes
+
+- Keep `src/clawsweeper.ts` orchestration narrow; put repository-specific policy
+  in `src/repository-profiles.ts`.
+- Review lane remains proposal-only. Do not reintroduce review-time closes.
+- Preserve token stripping in `codexEnv()` when adding new credential names.
+- Update tests when changing target defaults, apply policy, workflow fallbacks,
+  or public comment text.
+- Do not commit generated scratch output from `.artifacts/`, `artifacts/`, or
+  local Pi sessions.

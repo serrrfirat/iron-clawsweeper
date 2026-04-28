@@ -406,7 +406,7 @@ interface AuditResult {
 }
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const REPORT_REPO = "openclaw/clawsweeper";
+const REPORT_REPO = process.env.CLAWSWEEPER_REPORT_REPO ?? "serrrfirat/iron-clawsweeper";
 const RECORDS_ROOT = join(ROOT, "records");
 let activeRepositoryProfile = repositoryProfileFor(
   process.env.CLAWSWEEPER_TARGET_REPO ?? DEFAULT_TARGET_REPO,
@@ -2436,7 +2436,7 @@ export function safeOutputTail(
 }
 
 function codexFailureReason(detail: string): string {
-  if (detail.includes("Codex dirtied the OpenClaw checkout")) return "dirty checkout";
+  if (detail.includes("Codex dirtied the target checkout")) return "dirty checkout";
   if (detail.includes("did not produce output")) return "missing structured output";
   if (detail.includes("invalid JSON")) return "invalid structured output";
   if (detail.includes("ENOBUFS") || detail.includes("maxBuffer")) return "output buffer overflow";
@@ -2470,6 +2470,8 @@ export function codexEnv(): NodeJS.ProcessEnv {
   delete env.GH_TOKEN;
   delete env.GITHUB_TOKEN;
   delete env.OPENCLAW_GH_TOKEN;
+  delete env.CLAWSWEEPER_GH_TOKEN;
+  delete env.CLAWSWEEPER_DISPATCH_TOKEN;
   delete env.CLAWSWEEPER_APP_ID;
   delete env.CLAWSWEEPER_APP_PRIVATE_KEY;
   delete env.OPENAI_API_KEY;
@@ -2514,7 +2516,7 @@ function runCodex(options: {
   const dirtyBefore = openclawDirtyStatus(options.openclawDir);
   if (dirtyBefore) {
     throw new Error(
-      `OpenClaw checkout is dirty before reviewing #${options.item.number}:\n${dirtyBefore}`,
+      `Target checkout is dirty before reviewing #${options.item.number}:\n${dirtyBefore}`,
     );
   }
   const result = spawnSync(
@@ -2553,7 +2555,7 @@ function runCodex(options: {
   const dirtyAfter = openclawDirtyStatus(options.openclawDir);
   if (dirtyAfter) {
     throw new Error(
-      `Codex dirtied the OpenClaw checkout while reviewing #${options.item.number}:\n${dirtyAfter}`,
+      `Codex dirtied the target checkout while reviewing #${options.item.number}:\n${dirtyAfter}`,
     );
   }
   if (result.error) {
@@ -2886,13 +2888,13 @@ function closeIntro(reason: CloseReason): string {
     case "cannot_reproduce":
       return "Thanks for the report. I gave this a fresh shell check against current `main`, and I could not reproduce it anymore.";
     case "clawhub":
-      return `Thanks for the idea. I checked the current extension path, and this is a better fit for the ${markdownLink("ClawHub", targetProfile().communityUrl ?? "https://clawhub.ai/")}/community tide pool than OpenClaw core.`;
+      return `Thanks for the idea. I checked the current extension path, and this is a better fit for the ${markdownLink("ClawHub", targetProfile().communityUrl ?? "https://clawhub.ai/")}/community tide pool than ${targetProfile().displayName} core.`;
     case "duplicate_or_superseded":
       return "Thanks for the context here. I swept through the related work, and this is now duplicate or superseded.";
     case "not_actionable_in_repo":
-      return "Thanks for writing this up. I checked the repo boundary, and this lives outside the OpenClaw source shell.";
+      return `Thanks for writing this up. I checked the repo boundary, and this lives outside the ${targetProfile().displayName} source shell.`;
     case "incoherent":
-      return "Thanks for the note. I could not crack enough detail here to turn it into a concrete OpenClaw code or docs action.";
+      return `Thanks for the note. I could not crack enough detail here to turn it into a concrete ${targetProfile().displayName} code or docs action.`;
     case "stale_insufficient_info":
       return "Thanks for the report. I checked current `main`, but this shell is missing enough reproduction detail to verify a current bug.";
     case "none":
@@ -2905,11 +2907,11 @@ function closeOutro(reason: CloseReason): string {
     case "implemented_on_main":
       return "So I’m closing this as already implemented rather than keeping a duplicate issue open.";
     case "clawhub":
-      return "So I’m closing this as a scope-fit item for the plugin/community path rather than keeping it open as an OpenClaw core request.";
+      return `So I’m closing this as a scope-fit item for the plugin/community path rather than keeping it open as a ${targetProfile().displayName} core request.`;
     case "duplicate_or_superseded":
       return "So I’m closing this here and keeping the remaining discussion on the canonical linked item.";
     case "not_actionable_in_repo":
-      return "So I’m closing this as outside the OpenClaw source repository rather than keeping it open as core work.";
+      return `So I’m closing this as outside the ${targetProfile().displayName} source repository rather than keeping it open as core work.`;
     default:
       return "";
   }
